@@ -1,0 +1,294 @@
+{
+  "analysis": {
+    "purpose": "descriptive threshold-sensitivity demonstration",
+    "community_participant_data_used": false,
+    "minimum_group_n_for_aggregate_counts": 30,
+    "bootstrap_replicates": 10000,
+    "random_seed": 20260930,
+    "thresholds": [
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9,
+      0.95
+    ],
+    "git_commit_at_generation": "12bc6e297cfe512ef1651f4ca17a066a2d3a0051"
+  },
+  "datasets": {
+    "hmda_michigan_single_lender": {
+      "label": "HMDA Michigan single-lender filing",
+      "source_path": "data/demo/hmda_michigan_lending.csv",
+      "source_sha256": "17dad996ce10286d269e278cd6538067eab40cbf5616d26b6f2c6bcb169d3029",
+      "raw_records": 4463,
+      "records_after_label_filter": 3831,
+      "exact_duplicates_removed": 4,
+      "analyzed_records": 3827,
+      "group_column": "derived_race",
+      "outcome_column": "action_taken",
+      "favorable_value": 1,
+      "reference_group": "White",
+      "focus_group": "Black or African American",
+      "focus_result": {
+        "n": 630,
+        "favorable_rate": 0.344444,
+        "disparate_impact": 0.819453,
+        "di_bootstrap_95_percentile_interval": [
+          0.726006,
+          0.917533
+        ],
+        "reportable_n": true,
+        "flagged_at": [
+          0.85,
+          0.9,
+          0.95
+        ]
+      },
+      "groups": {
+        "American Indian or Alaska Native": {
+          "n": 29,
+          "favorable_rate": 0.137931,
+          "disparate_impact": 0.328146,
+          "di_bootstrap_95_percentile_interval": [
+            0.080467,
+            0.658966
+          ],
+          "reportable_n": false,
+          "flagged_at": [
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95
+          ]
+        },
+        "Asian": {
+          "n": 232,
+          "favorable_rate": 0.323276,
+          "disparate_impact": 0.769092,
+          "di_bootstrap_95_percentile_interval": [
+            0.627197,
+            0.920884
+          ],
+          "reportable_n": true,
+          "flagged_at": [
+            0.8,
+            0.85,
+            0.9,
+            0.95
+          ]
+        },
+        "Black or African American": {
+          "n": 630,
+          "favorable_rate": 0.344444,
+          "disparate_impact": 0.819453,
+          "di_bootstrap_95_percentile_interval": [
+            0.726006,
+            0.917533
+          ],
+          "reportable_n": true,
+          "flagged_at": [
+            0.85,
+            0.9,
+            0.95
+          ]
+        },
+        "Native Hawaiian or Other Pacific Islander": {
+          "n": 5,
+          "favorable_rate": 0.2,
+          "disparate_impact": 0.475812,
+          "di_bootstrap_95_percentile_interval": [
+            0.0,
+            1.440295
+          ],
+          "reportable_n": false,
+          "flagged_at": [
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95
+          ]
+        },
+        "White": {
+          "n": 2931,
+          "favorable_rate": 0.420334,
+          "disparate_impact": 1.0,
+          "di_bootstrap_95_percentile_interval": [
+            1.0,
+            1.0
+          ],
+          "reportable_n": true,
+          "flagged_at": []
+        }
+      },
+      "threshold_sweep": {
+        "0.70": {
+          "flagged_count_minimum_n_30": 0,
+          "flagged_groups_minimum_n_30": []
+        },
+        "0.75": {
+          "flagged_count_minimum_n_30": 0,
+          "flagged_groups_minimum_n_30": []
+        },
+        "0.80": {
+          "flagged_count_minimum_n_30": 1,
+          "flagged_groups_minimum_n_30": [
+            "Asian"
+          ]
+        },
+        "0.85": {
+          "flagged_count_minimum_n_30": 2,
+          "flagged_groups_minimum_n_30": [
+            "Asian",
+            "Black or African American"
+          ]
+        },
+        "0.90": {
+          "flagged_count_minimum_n_30": 2,
+          "flagged_groups_minimum_n_30": [
+            "Asian",
+            "Black or African American"
+          ]
+        },
+        "0.95": {
+          "flagged_count_minimum_n_30": 2,
+          "flagged_groups_minimum_n_30": [
+            "Asian",
+            "Black or African American"
+          ]
+        }
+      }
+    },
+    "compas_broward": {
+      "label": "ProPublica COMPAS Broward County data",
+      "source_path": "data/demo/compas_recidivism.csv",
+      "source_sha256": "c451db85908b2f7fef1d83203bedf6b71ecda0d5af468d82ae62178f91d0cc7d",
+      "raw_records": 7214,
+      "records_after_label_filter": 6837,
+      "exact_duplicates_removed": 0,
+      "analyzed_records": 6837,
+      "group_column": "race",
+      "outcome_column": "two_year_recid",
+      "favorable_value": 0,
+      "reference_group": "Caucasian",
+      "focus_group": "African-American",
+      "focus_result": {
+        "n": 3696,
+        "favorable_rate": 0.48566,
+        "disparate_impact": 0.800948,
+        "di_bootstrap_95_percentile_interval": [
+          0.765199,
+          0.839148
+        ],
+        "reportable_n": true,
+        "flagged_at": [
+          0.85,
+          0.9,
+          0.95
+        ]
+      },
+      "groups": {
+        "African-American": {
+          "n": 3696,
+          "favorable_rate": 0.48566,
+          "disparate_impact": 0.800948,
+          "di_bootstrap_95_percentile_interval": [
+            0.765199,
+            0.839148
+          ],
+          "reportable_n": true,
+          "flagged_at": [
+            0.85,
+            0.9,
+            0.95
+          ]
+        },
+        "Asian": {
+          "n": 32,
+          "favorable_rate": 0.71875,
+          "disparate_impact": 1.185358,
+          "di_bootstrap_95_percentile_interval": [
+            0.922094,
+            1.434369
+          ],
+          "reportable_n": true,
+          "flagged_at": []
+        },
+        "Caucasian": {
+          "n": 2454,
+          "favorable_rate": 0.606357,
+          "disparate_impact": 1.0,
+          "di_bootstrap_95_percentile_interval": [
+            1.0,
+            1.0
+          ],
+          "reportable_n": true,
+          "flagged_at": []
+        },
+        "Hispanic": {
+          "n": 637,
+          "favorable_rate": 0.635793,
+          "disparate_impact": 1.048545,
+          "di_bootstrap_95_percentile_interval": [
+            0.978789,
+            1.119834
+          ],
+          "reportable_n": true,
+          "flagged_at": []
+        },
+        "Native American": {
+          "n": 18,
+          "favorable_rate": 0.444444,
+          "disparate_impact": 0.732975,
+          "di_bootstrap_95_percentile_interval": [
+            0.363798,
+            1.109924
+          ],
+          "reportable_n": false,
+          "flagged_at": [
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95
+          ]
+        }
+      },
+      "threshold_sweep": {
+        "0.70": {
+          "flagged_count_minimum_n_30": 0,
+          "flagged_groups_minimum_n_30": []
+        },
+        "0.75": {
+          "flagged_count_minimum_n_30": 0,
+          "flagged_groups_minimum_n_30": []
+        },
+        "0.80": {
+          "flagged_count_minimum_n_30": 0,
+          "flagged_groups_minimum_n_30": []
+        },
+        "0.85": {
+          "flagged_count_minimum_n_30": 1,
+          "flagged_groups_minimum_n_30": [
+            "African-American"
+          ]
+        },
+        "0.90": {
+          "flagged_count_minimum_n_30": 1,
+          "flagged_groups_minimum_n_30": [
+            "African-American"
+          ]
+        },
+        "0.95": {
+          "flagged_count_minimum_n_30": 1,
+          "flagged_groups_minimum_n_30": [
+            "African-American"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,638 @@
+\documentclass[10pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{url}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  citecolor=blue!55!black,
+  urlcolor=blue!55!black,
+  pdftitle={Libra: From Community Input to Audit Parameters},
+  pdfauthor={Matthew Jackson}
+}
+
+\setlist{nosep,leftmargin=*}
+\newcommand{\libra}{\textsc{Libra}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{\libra: From Community Input to Audit Parameters\\
+\large A Provenance-Bearing Prototype for Participatory Fairness Auditing}
+\author{Matthew Jackson\\Independent Researcher}
+\date{September 30, 2026\\Version 1.0 preprint}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Fairness audits require choices about protected groups, reference populations,
+metrics, and decision thresholds. Software libraries make these choices
+configurable, but configuration authority usually remains with auditors,
+developers, or regulators. This paper presents \libra, a research prototype
+that represents an evaluation standard as a machine-readable configuration
+containing priority groups, a reference group, a disparate-impact threshold,
+evidence requirements, and provenance metadata. The prototype separates
+researcher-default audits from audits backed by a documented community process
+and implements a draft-to-finalized governance lifecycle for public-sector AI
+evaluation artifacts.
+
+We evaluate only the technical mechanism and threshold sensitivity; no
+community participant data are used. On a deduplicated 2024 single-lender
+Michigan HMDA extract ($n=3{,}827$), the Black-to-White observed origination
+ratio is $0.8195$. On the ProPublica COMPAS dataset ($n=6{,}837$), the
+African-American-to-Caucasian non-recidivism ratio is $0.8009$. Both point
+estimates are above a $0.80$ threshold and below $0.85$, so their audit labels
+change when the threshold changes. Bootstrap intervals cross these boundaries,
+underscoring that threshold rules and statistical uncertainty must be reported
+together. The result demonstrates parameter sensitivity, not that $0.85$ is
+the correct threshold or that a community selected it. A publishable claim of
+community validity requires prospective, ethically reviewed fieldwork.
+\end{abstract}
+
+\noindent\textbf{Keywords:} participatory AI; algorithmic auditing; disparate
+impact; public-sector AI; provenance; community governance
+
+\section{Introduction}
+
+Algorithmic fairness is not reducible to selecting a single metric. Several
+widely used fairness criteria are mutually incompatible except under restricted
+conditions \cite{chouldechova2017,kleinberg2017}. Operational tools such as
+AIF360, Aequitas, Fairlearn, and FairVis make measurement and mitigation more
+accessible \cite{bellamy2018,saleiro2018,weerts2023,cabrera2019}, but a prior
+governance question remains: who is authorized to choose the reference group,
+the acceptable threshold, and the evidence sufficient to support a finding?
+
+Participatory AI research has shown that affected people can contribute
+substantive knowledge about system goals, harms, and trade-offs
+\cite{lee2019,katell2020,birhane2022}. It has also warned that participation can
+be extractive or symbolic when institutions retain control over scope and
+implementation \cite{sloane2022}. Recent participatory-auditing studies further
+show that non-specialists surface impacts absent from standard taxonomies, while
+also needing scaffolding to translate lived concerns into measurable tests
+\cite{zhao2026,dicampli2026,rezk2026,escher2026}.
+
+This paper addresses a narrow systems problem within that larger literature:
+how can the output of a documented community process be represented as a
+versioned, provenance-bearing input to an audit of an existing public-sector AI
+system? We present \libra, a prototype governance-to-audit interface. Its
+contributions are:
+
+\begin{enumerate}
+  \item a formal representation of audit authority as a configuration
+  $C=(G,r,\theta,P)$, where $G$ is a set of priority groups, $r$ is a reference
+  group, $\theta$ is an audit threshold, and $P$ is provenance;
+  \item an implemented prototype that records configuration source, supports a
+  draft-to-finalized lifecycle, and carries the selected parameters into audit
+  outputs; and
+  \item a reproducible sensitivity analysis demonstrating that modest changes
+  in $\theta$ alter which groups are flagged in two public benchmark datasets.
+\end{enumerate}
+
+The paper makes no claim that participatory auditing, provenance, registers, or
+machine-readable AI governance are new categories. It does not report a
+community-defined threshold, a completed civic pilot, government endorsement,
+or improved social outcomes. The empirical contribution is a proof of
+mechanism: parameter choice can change an audit classification, so authority
+over that parameter is consequential.
+
+\section{Related Work}
+
+\subsection{Fairness metrics and audit toolkits}
+
+Group-fairness research provides multiple, sometimes incompatible, ways to
+compare outcomes and errors \cite{chouldechova2017,kleinberg2017}. AIF360,
+Aequitas, Fairlearn, and FairVis provide metrics, visualization, and mitigation
+methods \cite{bellamy2018,saleiro2018,weerts2023,cabrera2019}. These systems are
+valuable technical foundations; \libra's focus is not metric invention. Its
+focus is the authority and provenance attached to the parameters supplied to an
+audit.
+
+The four-fifths rule is an employment-selection heuristic in the U.S. Uniform
+Guidelines, not a universal legal definition of discrimination
+\cite{eeoc1978}. In this paper, $0.80$ is used as a familiar comparison scenario.
+Applying that number to lending or criminal-justice data is illustrative and
+does not establish legal compliance in either domain.
+
+\subsection{Participation and community-informed auditing}
+
+WeBuildAI demonstrated collective participation in designing an algorithmic
+policy for food-assistance allocation \cite{lee2019}. The Algorithmic Equity
+Toolkit supported community advocates auditing government technologies
+\cite{katell2020}. Birhane et al. synthesize opportunities and unresolved power
+questions in participatory AI, while Sloane et al. caution that participation
+alone is not a design fix \cite{birhane2022,sloane2022}.
+
+The closest recent work substantially narrows any broad novelty claim. Zhao et
+al. co-designed community-centered auditing tools with 22 educators in Hawai'i
+and argue that affected communities should shape who audits, the infrastructure
+used, and the desired outcomes \cite{zhao2026}. Di Campli San Vito et al. show
+that non-expert stakeholders identify overlooked harms but require assistance
+operationalizing them \cite{dicampli2026}. Rezk et al. find that participatory
+auditors' trust in apparently capable systems can reduce scrutiny
+\cite{rezk2026}. Escher et al. conduct a community-informed audit grounded in
+Kyrgyz caregivers' concerns about language and platform recommendations
+\cite{escher2026}. These studies provide empirical participation evidence that
+the present paper does not.
+
+\subsection{Provenance and operational governance artifacts}
+
+The Participation Ledger proposes machine-readable records linking community
+contributions to consent, compensation, authority, system changes, and
+replayable tests \cite{mushkani2026ledger}. Participatory provenance measures
+how public submissions survive AI-mediated consultation summaries
+\cite{mahajan2026}. Voices in the Loop offers a versioned and contestable atlas
+of participatory-AI initiatives \cite{mushkani2026voices}.
+
+Adjacent public-sector work also emphasizes reviewable artifacts. Vendor
+factsheets can support dialogue but are insufficient as standalone risk
+assessments \cite{kuehnert2026}. Li proposes a minimum reviewable trace for
+AI-influenced public decisions \cite{li2026}. The Eticas taxonomy maps risk
+concepts into tests, measurements, severity bands, and JSON-LD infrastructure
+\cite{galdon2026}. A global comparison of 8,368 public-sector AI-register
+records finds limited convergence and frequent omissions involving appeals,
+risks, legal bases, and external evaluation \cite{das2026}. \libra is positioned
+as a narrower prototype: a community-process output becomes an explicit audit
+input whose origin remains visible in the result.
+
+\section{Framework}
+
+\subsection{Audit parameters}
+
+Let $D=\{(x_i,a_i,y_i)\}_{i=1}^{n}$ be a dataset with sensitive-group label
+$a_i\in A$ and binary favorable-outcome indicator $y_i\in\{0,1\}$. For group
+$a$, the observed favorable-outcome rate is
+\begin{equation}
+  p_a = \Pr(Y=1\mid A=a)
+      = \frac{\sum_i y_i\mathbb{1}[a_i=a]}
+              {\sum_i \mathbb{1}[a_i=a]}.
+\end{equation}
+Given reference group $r$, the disparate-impact ratio is
+\begin{equation}
+  \operatorname{DI}(a,r)=\frac{p_a}{p_r}.
+\end{equation}
+A deterministic threshold rule flags group $a$ when
+$\operatorname{DI}(a,r)<\theta$. Equality with the threshold does not trigger a
+flag.
+
+The configuration is
+\begin{equation}
+  C=(G,r,\theta,P,E),
+\end{equation}
+where $G\subseteq A$ contains priority groups, $P$ contains process provenance,
+and $E$ contains evidence requirements such as minimum group size and acceptable
+attestation sources. Table~\ref{tab:config} summarizes the prototype schema.
+
+\begin{table}[ht]
+\centering
+\caption{Core configuration fields in the prototype.}
+\label{tab:config}
+\begin{tabular}{p{0.25\linewidth}p{0.67\linewidth}}
+\toprule
+Field & Purpose \\
+\midrule
+\code{priority\_groups} & Groups designated for elevated scrutiny. \\
+\code{fairness\_target} & Reference group used to compute outcome ratios. \\
+\code{fairness\_threshold} & Minimum accepted ratio under the configured rule. \\
+\code{domain}, \code{jurisdiction} & Scope boundaries for reuse. \\
+\code{provenance} & Process identifier, date, protocol, participant count,
+facilitator, notes, and dissent or decision metadata where available. \\
+\code{evidence\_requirements} & Minimum sample and evidence conditions applied
+before substantive evaluation. \\
+\code{attestor\_policy} & Permitted evidence signers or verifier classes. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Authority classification and lifecycle}
+
+The prototype distinguishes a default-governed analysis from an analysis whose
+configuration has passed a documented finalization workflow. This distinction
+does not make a session representative merely because metadata fields are
+present. ``Community-valid'' is an asserted governance classification whose
+substantive validity depends on participant selection, informed consent,
+facilitator independence, compensation, decision rules, dissent preservation,
+scope, and authorization. Those conditions require field evidence and cannot
+be proven by schema validation alone.
+
+The API prototype supports draft session records, finalization, active-standard
+resolution, provenance receipts, and audit outputs that identify whether a
+default or finalized configuration was applied. The public registry is empty at
+the time of this Version 1 analysis; therefore, the evaluation below produces
+no community-valid audit.
+
+\subsection{Implementation}
+
+The implementation consists of a reusable Python package, a FastAPI service,
+a React interface, a JSON-schema configuration format, and a controlled
+registry. The audit engine computes group outcome rates, reference-group ratios,
+threshold flags, and a max--min outcome-rate gap. The governance layer creates
+and validates configuration objects and tracks lifecycle state. A separate
+evidence path supports signed evidence and provenance receipts, but the present
+experiment evaluates only the group-rate audit and configuration mechanism.
+
+At the analyzed repository revision, 172 API and core tests passed. JSON
+validation and both web builds also passed when run with the repository's Python
+environment. These checks establish software behavior on the tested cases, not
+social validity, legal compliance, production security, or deployment status.
+
+\section{Evaluation}
+
+\subsection{Research questions}
+
+\begin{description}[leftmargin=3.6em,style=nextline]
+  \item[RQ1] Does changing only the disparate-impact threshold alter which
+  sufficiently represented groups are flagged?
+  \item[RQ2] Can the reported result be regenerated from versioned code and
+  local data artifacts without using participant data?
+\end{description}
+
+\subsection{Datasets}
+
+\paragraph{HMDA Michigan.}
+The source file contains 4,463 records from one 2024 Michigan lender filing.
+Records with unavailable, free-form, joint, multi-minority, or ``Other'' race
+labels were excluded. Four exact duplicate rows were removed, leaving 3,827
+records. The favorable outcome is \code{action\_taken=1} (loan originated); all
+other action codes are treated as non-origination. This is an observed
+origination analysis, not an approval model, statewide estimate, or causal test
+of discrimination. HMDA public data documentation is provided by the Consumer
+Financial Protection Bureau \cite{cfpbHMDA}.
+
+\paragraph{COMPAS.}
+We use 7,214 records in ProPublica's Broward County COMPAS release
+\cite{angwin2016}. Excluding the ``Other'' label leaves 6,837 records. The
+favorable outcome is no recorded two-year recidivism. The dataset is a contested
+historical benchmark and is used here only to reproduce a threshold-sensitivity
+mechanism, not to endorse COMPAS or infer individual risk.
+
+\subsection{Analysis}
+
+We calculate group rates and ratios relative to White applicants in HMDA and
+Caucasian defendants in COMPAS. We sweep
+$\theta\in\{0.70,0.75,0.80,0.85,0.90,0.95\}$. Aggregate counts exclude groups
+with fewer than 30 observations; excluded groups remain visible in the appendix.
+
+To make sampling uncertainty explicit, we generate 10,000 stratified parametric
+bootstrap replicates with fixed seed 20,260,930. Within each group, favorable
+counts are sampled from a binomial distribution using that group's observed
+rate. We report percentile intervals for the two focus ratios. These intervals
+are descriptive and do not correct for dataset construction, measurement error,
+or repeated analytic choices.
+
+\section{Results}
+
+\subsection{Threshold sensitivity}
+
+Table~\ref{tab:sweep} reports threshold flags among groups with $n\geq30$.
+Raising the scenario threshold from $0.80$ to $0.85$ adds the Black group in
+HMDA and the African-American group in COMPAS. The Asian HMDA group is already
+below $0.80$.
+
+\begin{table}[ht]
+\centering
+\caption{Groups flagged at each threshold; groups with $n<30$ excluded from
+counts.}
+\label{tab:sweep}
+\begin{tabular}{cccc}
+\toprule
+$\theta$ & HMDA & COMPAS & Combined \\
+\midrule
+0.70 & 0 & 0 & 0 \\
+0.75 & 0 & 0 & 0 \\
+0.80 & 1 & 0 & 1 \\
+0.85 & 2 & 1 & 3 \\
+0.90 & 2 & 1 & 3 \\
+0.95 & 2 & 1 & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The two boundary cases are shown in Table~\ref{tab:focus}. Both point estimates
+pass at $0.80$ and fail at $0.85$. Their intervals span one or both thresholds,
+so a binary label should never be presented without the estimate, sample size,
+and uncertainty.
+
+\begin{table}[ht]
+\centering
+\caption{Focus-group results. Intervals are 95\% bootstrap percentile
+intervals.}
+\label{tab:focus}
+\begin{tabular}{p{0.25\linewidth}rrrp{0.19\linewidth}}
+\toprule
+Dataset and group & $n_g$ & Rate & DI & 95\% interval \\
+\midrule
+HMDA: Black or African American & 630 & 0.3444 & 0.8195 & [0.7260, 0.9175] \\
+COMPAS: African-American & 3,696 & 0.4857 & 0.8009 & [0.7652, 0.8391] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These results answer RQ1 affirmatively as a deterministic property of the
+configured rule: for a fixed point estimate, the threshold changes the label.
+They do not show that $0.85$ is socially preferred, statistically optimal, or
+legally required.
+
+\subsection{Reproducibility}
+
+The analysis script records dataset hashes, preprocessing counts, the repository
+revision, all group rates, all threshold flags, the bootstrap seed, and the
+number of replicates in a machine-readable result file. It can be regenerated
+from the repository root with:
+
+\begin{verbatim}
+.venv/bin/python scripts/generate_preprint_v1_results.py
+\end{verbatim}
+
+At generation, the input SHA-256 hashes were
+\code{17dad996...169d3029} for HMDA and
+\code{c451db85...91d0cc7d} for COMPAS. A release archive and permanent artifact
+identifier should be assigned before external submission.
+
+\section{Discussion}
+
+\subsection{What the experiment establishes}
+
+The experiment establishes a narrow but consequential fact: an audit's
+threshold is not a passive display setting. Holding the dataset, metric, and
+reference group fixed, changing $\theta$ changes which groups receive a formal
+flag. A governance process that supplies $\theta$ therefore influences the
+audit's actionable output.
+
+The result supports making parameter source explicit. A report should indicate
+whether a threshold came from a regulation, an auditor default, a vendor, a
+research scenario, or a documented community process. The same number has a
+different authority claim under each source.
+
+\subsection{What the experiment does not establish}
+
+It does not establish that a community prefers $0.85$ or $0.90$. It does not
+show that participants understand the consequences of the parameterization. It
+does not validate the proposed facilitation protocol, demonstrate institutional
+response, or show improved outcomes. It also does not turn a ratio threshold
+into a legal conclusion. Those claims require different evidence.
+
+\subsection{Design implications for prospective fieldwork}
+
+Recent work suggests that a field study should go beyond asking participants to
+move a numeric slider. Participants should help define harms, evidence sources,
+perspectives, acceptable outcomes, and the authority to pause or reject a
+system \cite{zhao2026,dicampli2026,mushkani2026ledger}. The process should record
+disagreement instead of compressing it into false consensus, compensate
+participants, report whose perspectives are absent, and specify who owns and
+maintains the resulting artifact. ``Do not use this system'' must remain a valid
+outcome. Otherwise, machine-readable participation can become participation
+washing with better metadata.
+
+\section{Limitations and Ethics}
+
+\begin{itemize}
+  \item \textbf{No participant study.} No residents, educators, public-sector
+  staff, or affected decision subjects supplied data for this paper. No current
+  configuration is described as community-defined.
+  \item \textbf{Descriptive, non-causal analysis.} Group outcome ratios do not
+  identify why disparities occur and cannot establish unlawful discrimination,
+  model bias, or institutional intent.
+  \item \textbf{Dataset scope.} The HMDA file covers one lender and treats every
+  non-origination action as unfavorable. COMPAS is geographically and
+  historically specific. Neither supports broad population generalization.
+  \item \textbf{Categorization.} Administrative race labels flatten identity
+  and omit intersectional structure. Some groups remain too small for stable
+  interpretation; a minimum-$n$ rule reduces but does not solve this problem.
+  \item \textbf{Uncertainty.} The bootstrap intervals cross decision
+  thresholds. A mature implementation should incorporate interval-aware or
+  evidentiary review instead of relying only on point-estimate flags.
+  \item \textbf{Governance validity.} Provenance fields can document a process
+  but cannot guarantee representativeness, independence, consent, or influence.
+  Those properties require external review and institutional commitments.
+  \item \textbf{Prototype maturity.} Passing tests does not establish
+  production security or availability. The public deployment claim from an
+  earlier draft was not verified for this paper and is intentionally omitted.
+\end{itemize}
+
+Any future study that collects participant responses for publication should
+receive an institutional ethics or IRB determination before recruitment. It
+should use informed consent, privacy minimization, withdrawal procedures,
+participant compensation, and explicit authorization for quotations and
+artifact publication. District 3 and the City of Detroit are prospective
+contexts only; neither is represented as an endorser, adopter, or completed
+pilot in this paper.
+
+\section{Conclusion}
+
+\libra demonstrates a governance-to-audit mechanism in which the source and
+content of audit parameters remain visible in machine-readable outputs. Across
+two public benchmark datasets, moving a disparate-impact threshold from $0.80$
+to $0.85$ changes the status of substantively large groups. This shows why the
+choice and authority of an audit standard should be documented. Version 1 is a
+technical and methodological proof of mechanism. The next evidentiary step is a
+prospective, ethically reviewed co-design study that tests whether the protocol
+produces an authorized and useful standard and whether institutions act on it.
+
+\appendix
+\section{Group-Level Descriptive Results}
+
+\begin{longtable}{p{0.39\linewidth}rrrcl}
+\caption{All analyzed groups. A dagger marks groups excluded from aggregate
+flag counts because $n<30$.}\label{tab:allgroups}\\
+\toprule
+Dataset and group & $n$ & Rate & DI & $<0.80$ & $<0.85$ \\
+\midrule
+\endfirsthead
+\toprule
+Dataset and group & $n$ & Rate & DI & $<0.80$ & $<0.85$ \\
+\midrule
+\endhead
+HMDA: American Indian or Alaska Native$^{\dagger}$ & 29 & 0.1379 & 0.3281 & yes & yes \\
+HMDA: Asian & 232 & 0.3233 & 0.7691 & yes & yes \\
+HMDA: Black or African American & 630 & 0.3444 & 0.8195 & no & yes \\
+HMDA: Native Hawaiian or Other Pacific Islander$^{\dagger}$ & 5 & 0.2000 & 0.4758 & yes & yes \\
+HMDA: White (reference) & 2,931 & 0.4203 & 1.0000 & no & no \\
+\midrule
+COMPAS: African-American & 3,696 & 0.4857 & 0.8009 & no & yes \\
+COMPAS: Asian & 32 & 0.7188 & 1.1854 & no & no \\
+COMPAS: Caucasian (reference) & 2,454 & 0.6064 & 1.0000 & no & no \\
+COMPAS: Hispanic & 637 & 0.6358 & 1.0485 & no & no \\
+COMPAS: Native American$^{\dagger}$ & 18 & 0.4444 & 0.7330 & yes & yes \\
+\bottomrule
+\end{longtable}
+
+\section*{Data and Code Availability}
+
+The Version 1 analysis code, machine-readable results, and manuscript source
+are available in the versioned public release at
+\url{https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.0.0}.
+The manuscript is licensed under Creative Commons Attribution 4.0
+International (CC BY 4.0), and original analysis code is licensed under the
+Apache License 2.0. The raw HMDA and COMPAS files derive from third-party public
+sources, are not relicensed by this paper, and should be obtained and used in
+accordance with their source terms. The manuscript contains no confidential
+District 3 materials and no participant-level research data.
+
+\begin{thebibliography}{99}
+
+\bibitem{angwin2016}
+J. Angwin, J. Larson, S. Mattu, and L. Kirchner.
+Machine bias.
+\emph{ProPublica}, May 23, 2016.
+\url{https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing}
+
+\bibitem{bellamy2018}
+R. K. E. Bellamy et al.
+AI Fairness 360: An extensible toolkit for detecting, understanding, and
+mitigating unwanted algorithmic bias.
+\emph{arXiv:1810.01943}, 2018.
+
+\bibitem{birhane2022}
+A. Birhane, W. Isaac, V. Prabhakaran, M. D\'iaz, M. C. Elish, I. Gabriel,
+and S. Mohamed.
+Power to the people? Opportunities and challenges for participatory AI.
+\emph{EAAMO}, 2022. \url{https://arxiv.org/abs/2209.07572}
+
+\bibitem{cabrera2019}
+\'A. A. Cabrera, W. Epperson, F. Hohman, M. Kahng, J. Morgenstern, and
+D. H. Chau.
+FairVis: Visual analytics for discovering intersectional bias in machine
+learning.
+\emph{arXiv:1904.05419}, 2019.
+
+\bibitem{cfpbHMDA}
+Consumer Financial Protection Bureau.
+Home Mortgage Disclosure Act data.
+\url{https://ffiec.cfpb.gov/data-publication/}
+
+\bibitem{chouldechova2017}
+A. Chouldechova.
+Fair prediction with disparate impact: A study of bias in recidivism prediction
+instruments.
+\emph{Big Data}, 5(2):153--163, 2017.
+doi:10.1089/big.2016.0047.
+
+\bibitem{das2026}
+D. Das and S. Guha.
+A global comparison of schemas, transparency, and interoperability in
+public-sector AI registers and inventories.
+\emph{arXiv:2609.24883}, 2026.
+
+\bibitem{dicampli2026}
+P. Di Campli San Vito et al.
+Empowering stakeholders with participatory auditing of predictive AI:
+Perspectives from end-users and decision subjects without AI expertise.
+In \emph{Proceedings of CHI 2026}, pages 1--35, 2026.
+doi:10.1145/3772318.3791757.
+
+\bibitem{eeoc1978}
+U.S. Equal Employment Opportunity Commission.
+Uniform Guidelines on Employee Selection Procedures, 29 C.F.R.
+\S~1607.4(D), 1978.
+
+\bibitem{escher2026}
+N. Escher, B. Yrysov, A. McDermott, D. Chechelnitsky, H. B. Benyam, and
+N. Banovic.
+Empire Amplifier: Uncovering and contesting the prioritization of colonial
+content on platforms through community-informed algorithmic auditing.
+\emph{arXiv:2604.27498}, 2026.
+
+\bibitem{galdon2026}
+G. Galdon Clavell, P. Accuosto, and U. Gohar.
+The Eticas AI Risk Taxonomy: Open infrastructure for operationalizing AI
+audits.
+\emph{arXiv:2607.02201}, 2026.
+
+\bibitem{katell2020}
+M. Katell, M. Young, B. Herman, D. Dailey, A. Tam, V. Guetler, C. Binz,
+D. Raz, and P. M. Krafft.
+An algorithmic equity toolkit for technology audits by community advocates and
+activists.
+In \emph{Proceedings of FAccT 2020}, 2020.
+\url{https://arxiv.org/abs/1912.02943}
+
+\bibitem{kleinberg2017}
+J. Kleinberg, S. Mullainathan, and M. Raghavan.
+Inherent trade-offs in the fair determination of risk scores.
+In \emph{Proceedings of ITCS 2017}, 2017.
+\url{https://arxiv.org/abs/1609.05807}
+
+\bibitem{kuehnert2026}
+B. Kuehnert, N. Johnson, R. Dotan, and H. Heidari.
+Disclosure or marketing? Analyzing the efficacy of vendor self-reports for
+vetting public-sector AI.
+\emph{arXiv:2604.01332}, 2026.
+
+\bibitem{lee2019}
+M. K. Lee, D. Kusbit, A. Kahng, J. T. Kim, X. Yuan, A. Chan, D. See,
+R. Noothigattu, S. Lee, A. Psomas, and A. D. Procaccia.
+WeBuildAI: Participatory framework for algorithmic governance.
+\emph{Proceedings of the ACM on Human-Computer Interaction}, 3(CSCW), 2019.
+doi:10.1145/3359283.
+
+\bibitem{li2026}
+G. Li.
+Auditable accountability without an AI Act: Australia's public-sector AI
+assurance stack and the minimum reviewable trace.
+\emph{Law, Ethics \& Technology}, 3(3):1--13, 2026.
+doi:10.55092/let20260010.
+
+\bibitem{mahajan2026}
+S. Mahajan.
+Participatory provenance as representational auditing for AI-mediated public
+consultation.
+\emph{arXiv:2604.20711}, 2026.
+
+\bibitem{mushkani2026ledger}
+R. Mushkani.
+Traceable, enforceable, and compensable participation: A Participation Ledger
+for people-centered AI governance.
+\emph{arXiv:2602.10916}, 2026.
+
+\bibitem{mushkani2026voices}
+R. Mushkani.
+Voices in the Loop: Mapping participatory AI.
+\emph{Proceedings of FAccT 2026}, 2026.
+\url{https://arxiv.org/abs/2605.16827}
+
+\bibitem{rezk2026}
+A. M. Rezk, P. Di Campli San Vito, A. Soufan, G. McDonald, C. Macdonald,
+and I. Ounis.
+All Eyes on the Ranker: Participatory auditing to surface blind spots in ranked
+search results.
+\emph{arXiv:2604.09946}, 2026.
+
+\bibitem{saleiro2018}
+P. Saleiro, B. Kuester, L. Hinkson, J. London, A. Stevens, A. Anisfeld,
+K. T. Rodolfa, and R. Ghani.
+Aequitas: A bias and fairness audit toolkit.
+\emph{arXiv:1811.05577}, 2018.
+
+\bibitem{sloane2022}
+M. Sloane, E. Moss, O. Awomolo, and L. Forlano.
+Participation is not a design fix for machine learning.
+In \emph{Proceedings of EAAMO}, 2022.
+\url{https://arxiv.org/abs/2007.02423}
+
+\bibitem{weerts2023}
+H. Weerts, M. Dud\'ik, R. Edgar, A. Jalali, R. Lutz, and M. Madaio.
+Fairlearn: Assessing and improving fairness of AI systems.
+\emph{Journal of Machine Learning Research}, 24(257):1--8, 2023.
+
+\bibitem{zhao2026}
+D. Zhao, H. Cha, M. J. Ryan, A. Wang, R. Baker-Ramos,
+E.-B. Helekahi-Kaiwi, R. Diego, J. Hester, and D. Yang.
+Whose Knowledge Counts? Co-designing community-centered AI auditing tools with
+educators in Hawai'i.
+In \emph{Proceedings of CHI 2026}, pages 1--24, 2026.
+doi:10.1145/3772318.3790958.
+
+\end{thebibliography}
+
+\end{document}

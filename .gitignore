@@ -1,0 +1,10 @@
+.DS_Store
+.venv/
+__pycache__/
+*.pyc
+data/demo/*.csv
+!data/demo/README.md
+docs/research/*.aux
+docs/research/*.log
+docs/research/*.out
+docs/research/*.pdf
