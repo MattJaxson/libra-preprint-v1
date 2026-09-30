@@ -4,7 +4,7 @@ This repository is the public reproducibility package for:
 
 > Matthew Jackson. *Libra: From Community Input to Audit Parameters — A
 > Provenance-Bearing Prototype for Participatory Fairness Auditing.* Version
-> 1.0 preprint, 2026.
+> 1.0.1 preprint, 2026.
 
 ## Contents
 
@@ -54,4 +54,4 @@ of each exact input file used for Version 1.
 
 Use the metadata in `CITATION.cff`. The stable Version 1 release is:
 
-<https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.0.0>
+<https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.0.1>

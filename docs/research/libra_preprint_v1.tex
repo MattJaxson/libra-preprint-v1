@@ -30,7 +30,7 @@
 \title{\libra: From Community Input to Audit Parameters\\
 \large A Provenance-Bearing Prototype for Participatory Fairness Auditing}
 \author{Matthew Jackson\\Independent Researcher}
-\date{September 30, 2026\\Version 1.0 preprint}
+\date{September 30, 2026\\Version 1.0.1 preprint}
 
 \begin{document}
 \maketitle
@@ -53,7 +53,8 @@ Michigan HMDA extract ($n=3{,}827$), the Black-to-White observed origination
 ratio is $0.8195$. On the ProPublica COMPAS dataset ($n=6{,}837$), the
 African-American-to-Caucasian non-recidivism ratio is $0.8009$. Both point
 estimates are above a $0.80$ threshold and below $0.85$, so their audit labels
-change when the threshold changes. Bootstrap intervals cross these boundaries,
+change when the threshold changes. Bootstrap intervals cross at least one of
+these boundaries,
 underscoring that threshold rules and statistical uncertainty must be reported
 together. The result demonstrates parameter sensitivity, not that $0.85$ is
 the correct threshold or that a community selected it. A publishable claim of
@@ -351,13 +352,14 @@ number of replicates in a machine-readable result file. It can be regenerated
 from the repository root with:
 
 \begin{verbatim}
-.venv/bin/python scripts/generate_preprint_v1_results.py
+python -m pip install -r requirements.txt
+python scripts/generate_preprint_v1_results.py
 \end{verbatim}
 
 At generation, the input SHA-256 hashes were
 \code{17dad996...169d3029} for HMDA and
-\code{c451db85...91d0cc7d} for COMPAS. A release archive and permanent artifact
-identifier should be assigned before external submission.
+\code{c451db85...91d0cc7d} for COMPAS. The versioned public artifact is
+available at the release URL reported in the Data and Code Availability section.
 
 \section{Discussion}
 
@@ -471,7 +473,7 @@ COMPAS: Native American$^{\dagger}$ & 18 & 0.4444 & 0.7330 & yes & yes \\
 
 The Version 1 analysis code, machine-readable results, and manuscript source
 are available in the versioned public release at
-\url{https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.0.0}.
+\url{https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.0.1}.
 The manuscript is licensed under Creative Commons Attribution 4.0
 International (CC BY 4.0), and original analysis code is licensed under the
 Apache License 2.0. The raw HMDA and COMPAS files derive from third-party public
