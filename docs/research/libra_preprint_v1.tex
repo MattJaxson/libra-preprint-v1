@@ -12,7 +12,7 @@
 \usepackage{enumitem}
 \usepackage{xcolor}
 \usepackage{hyperref}
-\usepackage{url}
+\usepackage{xurl}
 
 \hypersetup{
   colorlinks=true,
@@ -24,6 +24,7 @@
 }
 
 \setlist{nosep,leftmargin=*}
+\setlength{\emergencystretch}{2em}
 \newcommand{\libra}{\textsc{Libra}}
 \newcommand{\code}[1]{\texttt{#1}}
 
@@ -33,7 +34,16 @@
 \date{October 2026\\Technical preprint v1.1.0; not peer reviewed}
 
 \begin{document}
-\maketitle
+\begin{center}
+{\Large \libra: A Prototype for Provenance-Aware Fairness Audit Parameters\par}
+\vspace{0.35em}
+{\large Implementation Review and Descriptive Sensitivity Analysis\par}
+\vspace{1em}
+Matthew Jackson \enspace\textperiodcentered\enspace Independent Researcher\par
+\vspace{0.25em}
+{\small October 2026 \enspace\textperiodcentered\enspace Technical preprint v1.1.0; not peer reviewed\par}
+\end{center}
+\vspace{0.5em}
 
 \begin{abstract}
 Fairness audits require choices about groups, reference populations, outcome
@@ -487,14 +497,16 @@ python scripts/generate_preprint_v1_results.py
 python scripts/preprint_hmda_outcome_sensitivity.py
 \end{verbatim}
 
-The HMDA input SHA-256 is
-\code{17dad996ce10286d269e278cd6538067eab40cbf5616d26b6f2c6bcb169d3029};
-its parsed-row multiset digest is
-\code{b1c6b9619e2676fe8ce2901707cf17e99987bde668a678605d7f9702d1d9f4da}.
 The COMPAS local file was byte-for-byte identical to a fresh download from
-ProPublica's repository on September 30, 2026; its SHA-256 is
-\code{c451db85908b2f7fef1d83203bedf6b71ecda0d5af468d82ae62178f91d0cc7d}.
-Exact URLs, commands, and source-drift cautions are in the companion
+ProPublica's repository on September 30, 2026. Input digests (SHA-256):
+
+\begin{itemize}
+\item HMDA input file: {\footnotesize\code{17dad996ce10286d269e278cd6538067eab40cbf5616d26b6f2c6bcb169d3029}}
+\item HMDA parsed-row multiset: {\footnotesize\code{b1c6b9619e2676fe8ce2901707cf17e99987bde668a678605d7f9702d1d9f4da}}
+\item COMPAS input file: {\footnotesize\code{c451db85908b2f7fef1d83203bedf6b71ecda0d5af468d82ae62178f91d0cc7d}}
+\end{itemize}
+
+\noindent Exact URLs, commands, and source-drift cautions are in the companion
 data-acquisition note. The associated v1.1.0 release includes this revision,
 both scripts and result files, acquisition notes, and direct dependency pins.
 Neither third-party raw file is included. The earlier v1.0.1 release contains a
