@@ -1,0 +1,4 @@
+# Verified with Python 3.12.0 for the v1.1.0 descriptive analysis scripts.
+# These are direct dependency pins, not a full transitive environment lock.
+numpy==2.3.5
+pandas==2.2.3

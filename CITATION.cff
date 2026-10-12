@@ -1,19 +1,18 @@
 cff-version: 1.2.0
 message: "If you use this manuscript or code, please cite it using this metadata."
-title: "Libra: From Community Input to Audit Parameters"
+title: "Libra: A Prototype for Provenance-Aware Fairness Audit Parameters"
 type: software
-version: 1.0.1
-date-released: 2026-09-30
+version: 1.1.0
 authors:
   - family-names: Jackson
     given-names: Matthew
 repository-code: "https://github.com/MattJaxson/libra-preprint-v1"
-url: "https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.0.1"
+url: "https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.1.0"
 abstract: >-
-  A public reproducibility package for a provenance-bearing prototype that
-  represents community-governance inputs as machine-readable fairness-audit
-  parameters. Version 1 reports only technical and threshold-sensitivity
-  results and uses no community participant data.
+  Reproducibility package for an unreviewed technical preprint on partial
+  provenance-aware fairness-audit parameters and descriptive threshold and
+  outcome-definition sensitivity. No community participant study or AI-model
+  evaluation was conducted.
 keywords:
   - participatory AI
   - algorithmic auditing
@@ -22,10 +21,10 @@ keywords:
   - provenance
 preferred-citation:
   type: article
-  title: "Libra: From Community Input to Audit Parameters — A Provenance-Bearing Prototype for Participatory Fairness Auditing"
-  version: 1.0.1
+  title: "Libra: A Prototype for Provenance-Aware Fairness Audit Parameters — Implementation Review and Descriptive Sensitivity Analysis"
+  version: 1.1.0
   year: 2026
   authors:
     - family-names: Jackson
       given-names: Matthew
-  url: "https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.0.1"
+  url: "https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.1.0"

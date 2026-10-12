@@ -1,29 +1,39 @@
-# Libra Preprint Version 1
+# Libra Technical Preprint v1.1.0
 
 This repository is the public reproducibility package for:
 
-> Matthew Jackson. *Libra: From Community Input to Audit Parameters — A
-> Provenance-Bearing Prototype for Participatory Fairness Auditing.* Version
-> 1.0.1 preprint, 2026.
+> Matthew Jackson. *Libra: A Prototype for Provenance-Aware Fairness Audit
+> Parameters — Implementation Review and Descriptive Sensitivity Analysis.*
+> Technical preprint v1.1.0, 2026. Not peer reviewed.
 
 ## Contents
 
 - `docs/research/libra_preprint_v1.tex`: manuscript source.
-- `scripts/generate_preprint_v1_results.py`: analysis used for the reported
-  HMDA and COMPAS threshold-sensitivity results.
-- `docs/research/preprint_v1_results.json`: machine-readable Version 1 output.
+- `scripts/generate_preprint_v1_results.py` and
+  `scripts/preprint_hmda_outcome_sensitivity.py`: descriptive analyses.
+- `docs/research/preprint_v1_results.json` and
+  `docs/research/preprint_hmda_outcome_sensitivity.json`: machine-readable results.
+- `docs/research/preprint_data_acquisition.md`: exact source URLs, hashes, and
+  source-drift cautions.
+- `docs/research/requirements-preprint.txt`: tested direct dependency pins.
 
 ## Evidence boundary
 
-Version 1 evaluates a methods-and-system prototype and researcher-defined
-threshold scenarios. It uses no community participant data and does not claim
-a community-selected threshold, a completed District 3 session, endorsement,
-adoption, or a published community standard.
+This revision reviews a partial software prototype and researcher-defined
+threshold and outcome scenarios. It is **not** a participant-backed study, an
+AI-model fairness evaluation, a complete end-to-end authenticated governance
+trace, a completed District 3 session, or evidence of government endorsement
+or adoption. The COMPAS example uses observed recidivism, not model scores.
+The earlier v1.0.1 release reports a different analysis and should not be used
+to reproduce the v1.1.0 paper.
+This narrow package reproduces the descriptive analyses, not the paper's
+local API/core implementation checks; the inspected application source and
+test fixtures are not bundled here.
 
 ## Reproduction
 
-The analysis requires Python 3.11 or later with the packages listed in
-`requirements.txt`. Place source data at:
+The analyses were checked using Python 3.12.0 and the direct pins in
+`docs/research/requirements-preprint.txt`. Place source data at:
 
 - `data/demo/hmda_michigan_lending.csv`
 - `data/demo/compas_recidivism.csv`
@@ -31,16 +41,18 @@ The analysis requires Python 3.11 or later with the packages listed in
 Then run:
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r docs/research/requirements-preprint.txt
 python scripts/generate_preprint_v1_results.py
+python scripts/preprint_hmda_outcome_sensitivity.py
 ```
 
-The release does not redistribute the raw datasets. Obtain and use HMDA data
-from the [CFPB data publication platform](https://ffiec.cfpb.gov/data-publication/)
-and COMPAS data from the
-[ProPublica COMPAS repository](https://github.com/propublica/compas-analysis),
-subject to their respective terms. The JSON output records the SHA-256 digest
-of each exact input file used for Version 1.
+The release does not redistribute raw third-party datasets. Follow the
+[acquisition note](docs/research/preprint_data_acquisition.md) for the exact
+CFPB query and ProPublica file, then verify the recorded hashes and row counts.
+The primary HMDA calculation retains four identical public-use rows because
+their identity does not prove duplicate real-world applications; the separate
+deduplication analysis is a sensitivity check. Reacquired source files can
+drift, so reproduce against the documented snapshots before comparing outputs.
 
 ## Licensing
 
@@ -52,6 +64,6 @@ of each exact input file used for Version 1.
 
 ## Citation
 
-Use the metadata in `CITATION.cff`. The stable Version 1 release is:
+Use the metadata in `CITATION.cff`. The versioned companion release is:
 
-<https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.0.1>
+<https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.1.0>

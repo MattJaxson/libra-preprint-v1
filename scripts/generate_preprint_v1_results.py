@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -43,7 +43,8 @@ DATASETS = {
         "favorable_value": 1,
         "reference_group": "White",
         "focus_group": "Black or African American",
-        "deduplicate": True,
+        # Identical public-use rows are not proven duplicate applications.
+        "deduplicate": False,
     },
     "compas_broward": {
         "label": "ProPublica COMPAS Broward County data",
@@ -64,15 +65,6 @@ def sha256(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
-
-
-def git_commit() -> str | None:
-    try:
-        return subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
-        ).strip()
-    except (OSError, subprocess.CalledProcessError):
-        return None
 
 
 def bootstrap_di(
@@ -101,6 +93,7 @@ def analyze_dataset(key: str, spec: dict, rng: np.random.Generator) -> dict:
     raw_n = len(frame)
     frame = frame.loc[~frame[spec["group_column"]].isin(SKIP_LABELS)].copy()
     filtered_n = len(frame)
+    exact_duplicate_rows_present = int(frame.duplicated().sum())
     duplicates_removed = 0
     if spec["deduplicate"]:
         before = len(frame)
@@ -160,6 +153,7 @@ def analyze_dataset(key: str, spec: dict, rng: np.random.Generator) -> dict:
         "source_sha256": sha256(path),
         "raw_records": raw_n,
         "records_after_label_filter": filtered_n,
+        "exact_duplicate_rows_present": exact_duplicate_rows_present,
         "exact_duplicates_removed": duplicates_removed,
         "analyzed_records": len(frame),
         "group_column": spec["group_column"],
@@ -182,8 +176,11 @@ def main() -> None:
             "minimum_group_n_for_aggregate_counts": MIN_GROUP_N,
             "bootstrap_replicates": BOOTSTRAP_REPLICATES,
             "random_seed": SEED,
+            "python_version": sys.version.split()[0],
+            "numpy_version": np.__version__,
+            "pandas_version": pd.__version__,
             "thresholds": list(THRESHOLDS),
-            "git_commit_at_generation": git_commit(),
+            "analysis_script_sha256": sha256(Path(__file__)),
         },
         "datasets": {
             key: analyze_dataset(key, spec, rng) for key, spec in DATASETS.items()

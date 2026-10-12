@@ -5,6 +5,9 @@
     "minimum_group_n_for_aggregate_counts": 30,
     "bootstrap_replicates": 10000,
     "random_seed": 20260930,
+    "python_version": "3.12.0",
+    "numpy_version": "2.3.5",
+    "pandas_version": "2.2.3",
     "thresholds": [
       0.7,
       0.75,
@@ -13,7 +16,7 @@
       0.9,
       0.95
     ],
-    "git_commit_at_generation": "12bc6e297cfe512ef1651f4ca17a066a2d3a0051"
+    "analysis_script_sha256": "6e25942d5d9d5c1c19d17ab1590bcd2e1025c40da18ff8fd8e43f460a681cfba"
   },
   "datasets": {
     "hmda_michigan_single_lender": {
@@ -22,20 +25,21 @@
       "source_sha256": "17dad996ce10286d269e278cd6538067eab40cbf5616d26b6f2c6bcb169d3029",
       "raw_records": 4463,
       "records_after_label_filter": 3831,
-      "exact_duplicates_removed": 4,
-      "analyzed_records": 3827,
+      "exact_duplicate_rows_present": 4,
+      "exact_duplicates_removed": 0,
+      "analyzed_records": 3831,
       "group_column": "derived_race",
       "outcome_column": "action_taken",
       "favorable_value": 1,
       "reference_group": "White",
       "focus_group": "Black or African American",
       "focus_result": {
-        "n": 630,
-        "favorable_rate": 0.344444,
-        "disparate_impact": 0.819453,
+        "n": 632,
+        "favorable_rate": 0.343354,
+        "disparate_impact": 0.817418,
         "di_bootstrap_95_percentile_interval": [
-          0.726006,
-          0.917533
+          0.725008,
+          0.915593
         ],
         "reportable_n": true,
         "flagged_at": [
@@ -48,10 +52,10 @@
         "American Indian or Alaska Native": {
           "n": 29,
           "favorable_rate": 0.137931,
-          "disparate_impact": 0.328146,
+          "disparate_impact": 0.32837,
           "di_bootstrap_95_percentile_interval": [
-            0.080467,
-            0.658966
+            0.080524,
+            0.658343
           ],
           "reportable_n": false,
           "flagged_at": [
@@ -66,10 +70,10 @@
         "Asian": {
           "n": 232,
           "favorable_rate": 0.323276,
-          "disparate_impact": 0.769092,
+          "disparate_impact": 0.769617,
           "di_bootstrap_95_percentile_interval": [
-            0.627197,
-            0.920884
+            0.626554,
+            0.919441
           ],
           "reportable_n": true,
           "flagged_at": [
@@ -80,12 +84,12 @@
           ]
         },
         "Black or African American": {
-          "n": 630,
-          "favorable_rate": 0.344444,
-          "disparate_impact": 0.819453,
+          "n": 632,
+          "favorable_rate": 0.343354,
+          "disparate_impact": 0.817418,
           "di_bootstrap_95_percentile_interval": [
-            0.726006,
-            0.917533
+            0.725008,
+            0.915593
           ],
           "reportable_n": true,
           "flagged_at": [
@@ -97,10 +101,10 @@
         "Native Hawaiian or Other Pacific Islander": {
           "n": 5,
           "favorable_rate": 0.2,
-          "disparate_impact": 0.475812,
+          "disparate_impact": 0.476136,
           "di_bootstrap_95_percentile_interval": [
             0.0,
-            1.440295
+            1.437745
           ],
           "reportable_n": false,
           "flagged_at": [
@@ -113,8 +117,8 @@
           ]
         },
         "White": {
-          "n": 2931,
-          "favorable_rate": 0.420334,
+          "n": 2933,
+          "favorable_rate": 0.420048,
           "disparate_impact": 1.0,
           "di_bootstrap_95_percentile_interval": [
             1.0,
@@ -168,6 +172,7 @@
       "source_sha256": "c451db85908b2f7fef1d83203bedf6b71ecda0d5af468d82ae62178f91d0cc7d",
       "raw_records": 7214,
       "records_after_label_filter": 6837,
+      "exact_duplicate_rows_present": 0,
       "exact_duplicates_removed": 0,
       "analyzed_records": 6837,
       "group_column": "race",
@@ -181,7 +186,7 @@
         "disparate_impact": 0.800948,
         "di_bootstrap_95_percentile_interval": [
           0.765199,
-          0.839148
+          0.840561
         ],
         "reportable_n": true,
         "flagged_at": [
@@ -197,7 +202,7 @@
           "disparate_impact": 0.800948,
           "di_bootstrap_95_percentile_interval": [
             0.765199,
-            0.839148
+            0.840561
           ],
           "reportable_n": true,
           "flagged_at": [
@@ -211,8 +216,8 @@
           "favorable_rate": 0.71875,
           "disparate_impact": 1.185358,
           "di_bootstrap_95_percentile_interval": [
-            0.922094,
-            1.434369
+            0.92393,
+            1.4315
           ],
           "reportable_n": true,
           "flagged_at": []
@@ -233,8 +238,8 @@
           "favorable_rate": 0.635793,
           "disparate_impact": 1.048545,
           "di_bootstrap_95_percentile_interval": [
-            0.978789,
-            1.119834
+            0.979688,
+            1.119831
           ],
           "reportable_n": true,
           "flagged_at": []
@@ -244,8 +249,8 @@
           "favorable_rate": 0.444444,
           "disparate_impact": 0.732975,
           "di_bootstrap_95_percentile_interval": [
-            0.363798,
-            1.109924
+            0.364278,
+            1.111413
           ],
           "reportable_n": false,
           "flagged_at": [

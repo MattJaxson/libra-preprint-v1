@@ -19,7 +19,7 @@
   linkcolor=blue!55!black,
   citecolor=blue!55!black,
   urlcolor=blue!55!black,
-  pdftitle={Libra: From Community Input to Audit Parameters},
+  pdftitle={Libra: A Prototype for Provenance-Aware Fairness Audit Parameters},
   pdfauthor={Matthew Jackson}
 }
 
@@ -27,38 +27,38 @@
 \newcommand{\libra}{\textsc{Libra}}
 \newcommand{\code}[1]{\texttt{#1}}
 
-\title{\libra: From Community Input to Audit Parameters\\
-\large A Provenance-Bearing Prototype for Participatory Fairness Auditing}
+\title{\libra: A Prototype for Provenance-Aware Fairness Audit Parameters\\
+\large Implementation Review and Descriptive Sensitivity Analysis}
 \author{Matthew Jackson\\Independent Researcher}
-\date{September 30, 2026\\Version 1.0.1 preprint}
+\date{October 2026\\Technical preprint v1.1.0; not peer reviewed}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Fairness audits require choices about protected groups, reference populations,
-metrics, and decision thresholds. Software libraries make these choices
-configurable, but configuration authority usually remains with auditors,
-developers, or regulators. This paper presents \libra, a research prototype
-that represents an evaluation standard as a machine-readable configuration
-containing priority groups, a reference group, a disparate-impact threshold,
-evidence requirements, and provenance metadata. The prototype separates
-researcher-default audits from audits backed by a documented community process
-and implements a draft-to-finalized governance lifecycle for public-sector AI
-evaluation artifacts.
+Fairness audits require choices about groups, reference populations, outcome
+definitions, and decision thresholds. This paper presents \libra, a prototype
+that stores some of those choices with process metadata and applies a selected
+threshold and reference group in a group-outcome audit. We review its
+implementation boundaries and perform descriptive sensitivity analyses; we do
+not evaluate a participatory process or an AI model. No community participant
+data are used.
 
-We evaluate only the technical mechanism and threshold sensitivity; no
-community participant data are used. On a deduplicated 2024 single-lender
-Michigan HMDA extract ($n=3{,}827$), the Black-to-White observed origination
-ratio is $0.8195$. On the ProPublica COMPAS dataset ($n=6{,}837$), the
-African-American-to-Caucasian non-recidivism ratio is $0.8009$. Both point
-estimates are above a $0.80$ threshold and below $0.85$, so their audit labels
-change when the threshold changes. Bootstrap intervals cross at least one of
-these boundaries,
-underscoring that threshold rules and statistical uncertainty must be reported
-together. The result demonstrates parameter sensitivity, not that $0.85$ is
-the correct threshold or that a community selected it. A publishable claim of
-community validity requires prospective, ethically reviewed fieldwork.
+In a 2024 single-lender Michigan HMDA extract retaining identical public-use
+rows, the Black-to-White ratio for observed origination among all retained
+action codes is $0.8174$ ($n=3{,}831$), but it is $0.7162$ when restricted to
+originated versus denied applications ($n=2{,}925$). In a historical ProPublica COMPAS extract, the
+African-American-to-Caucasian ratio for no recorded two-year recidivism is
+$0.8009$ ($n=6{,}837$); this is an observed outcome, not a COMPAS prediction
+error measure. A threshold change from $0.80$ to $0.85$ changes two selected
+point-estimate labels under the original outcome definitions, while the HMDA
+label also changes under a plausible outcome definition. Code review and new
+tests show that non-demo finalization can now be constrained to its approved
+draft and that a finalized reference group cannot be overridden in the core
+racial-audit path. The signed receipt covers only selected fields, however,
+and neither metadata completeness nor self-declared observer approval
+establishes community authorization. The evidence supports a limited software
+mechanism and a methodological warning, not a validated community standard.
 \end{abstract}
 
 \noindent\textbf{Keywords:} participatory AI; algorithmic auditing; disparate
@@ -84,28 +84,28 @@ also needing scaffolding to translate lived concerns into measurable tests
 \cite{zhao2026,dicampli2026,rezk2026,escher2026}.
 
 This paper addresses a narrow systems problem within that larger literature:
-how can the output of a documented community process be represented as a
-versioned, provenance-bearing input to an audit of an existing public-sector AI
-system? We present \libra, a prototype governance-to-audit interface. Its
+how can proposed audit parameters be represented with their claimed source and
+passed to an audit engine? We present \libra, a prototype interface. Its
 contributions are:
 
 \begin{enumerate}
-  \item a formal representation of audit authority as a configuration
-  $C=(G,r,\theta,P)$, where $G$ is a set of priority groups, $r$ is a reference
-  group, $\theta$ is an audit threshold, and $P$ is provenance;
-  \item an implemented prototype that records configuration source, supports a
-  draft-to-finalized lifecycle, and carries the selected parameters into audit
-  outputs; and
-  \item a reproducible sensitivity analysis demonstrating that modest changes
-  in $\theta$ alter which groups are flagged in two public benchmark datasets.
+  \item a specification of a complete audit standard
+  $C^*=(S,G,r,O,\theta,P,E)$, covering scope, groups, reference, outcome
+  definition, threshold, process provenance, and evidence requirements, plus
+  a gap analysis of what the current prototype binds;
+  \item an implementation review and regression tests of two parameter-binding
+  invariants, together with a disclosure of unverified authority and receipt
+  coverage; and
+  \item a reproducible sensitivity analysis showing the effect of both
+  $\theta$ and the outcome definition on descriptive group ratios.
 \end{enumerate}
 
 The paper makes no claim that participatory auditing, provenance, registers, or
-machine-readable AI governance are new categories. It does not report a
-community-defined threshold, a completed civic pilot, government endorsement,
-or improved social outcomes. The empirical contribution is a proof of
-mechanism: parameter choice can change an audit classification, so authority
-over that parameter is consequential.
+machine-readable AI governance are new categories. It reports no
+community-defined threshold, completed civic pilot, government endorsement,
+model-performance result, or improved social outcome. Its modest finding is
+that analytic and governance choices can change a reported label; whether
+\libra\ can legitimately translate community authority remains untested.
 
 \section{Related Work}
 
@@ -124,6 +124,14 @@ Guidelines, not a universal legal definition of discrimination
 \cite{eeoc1978}. In this paper, $0.80$ is used as a familiar comparison scenario.
 Applying that number to lending or criminal-justice data is illustrative and
 does not establish legal compliance in either domain.
+
+LLM-bias studies target different evaluation objects. Pang et al. use the
+acronym \emph{LIBRA} for a local-context LLM-bias framework
+\cite{pang2025}; this project is unrelated and makes no claim to that name's
+originality. Bouchard develops use-case-specific choices of LLM fairness
+metrics \cite{bouchard2026}, and BiasFreeBench evaluates mitigation through
+generated responses \cite{xu2026}. The present HMDA and COMPAS calculations
+do not evaluate LLM outputs or extend those benchmarks.
 
 \subsection{Participation and community-informed auditing}
 
@@ -150,7 +158,11 @@ the present paper does not.
 
 The Participation Ledger proposes machine-readable records linking community
 contributions to consent, compensation, authority, system changes, and
-replayable tests \cite{mushkani2026ledger}. Participatory provenance measures
+replayable tests \cite{mushkani2026ledger}. Its design substantially overlaps
+\libra's provenance and participation ambitions; the present work does not
+claim to originate those ideas or to outperform that proposal. Its narrower
+implementation target is a fairness-audit configuration and its use at an
+audit call. Participatory provenance measures
 how public submissions survive AI-mediated consultation summaries
 \cite{mahajan2026}. Voices in the Loop offers a versioned and contestable atlas
 of participatory-AI initiatives \cite{mushkani2026voices}.
@@ -166,33 +178,63 @@ risks, legal bases, and external evaluation \cite{das2026}. \libra is positioned
 as a narrower prototype: a community-process output becomes an explicit audit
 input whose origin remains visible in the result.
 
+Table~\ref{tab:related-comparison} locates the present evidence against selected
+adjacent contributions. It compares reported focus and evidence, not the
+quality or completeness of the other systems.
+
+\begin{table}[ht]
+\centering
+\caption{Selected adjacent work and the boundary of this contribution.}
+\label{tab:related-comparison}
+\begin{tabular}{p{0.21\linewidth}p{0.34\linewidth}p{0.35\linewidth}}
+\toprule
+Work & Reported focus or evidence & Relationship to this study \\
+\midrule
+Algorithmic Equity Toolkit \cite{katell2020} & Toolkit shaped with community advocates for government-technology audits. & Provides participatory evidence absent from this prototype review. \\
+Zhao et al. \cite{zhao2026} & Co-design of community-centered auditing tools with educators. & Studies affected stakeholders directly; this paper does not. \\
+Participation Ledger \cite{mushkani2026ledger} & Proposed machine-readable participation, authority, influence, and replayable tests. & Overlaps the provenance ambition; \libra\ does not demonstrate comparable enforceability. \\
+\libra\ (this paper) & Partial fairness-parameter configuration, two tested binding guards, and descriptive sensitivity. & Outcome definition, full receipt binding, and community authorization remain unverified. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Framework}
 
 \subsection{Audit parameters}
 
 Let $D=\{(x_i,a_i,y_i)\}_{i=1}^{n}$ be a dataset with sensitive-group label
 $a_i\in A$ and binary favorable-outcome indicator $y_i\in\{0,1\}$. For group
-$a$, the observed favorable-outcome rate is
+$a$, the \emph{sample} favorable-outcome rate is
 \begin{equation}
-  p_a = \Pr(Y=1\mid A=a)
-      = \frac{\sum_i y_i\mathbb{1}[a_i=a]}
+  \widehat p_a = \frac{\sum_i y_i\mathbb{1}[a_i=a]}
               {\sum_i \mathbb{1}[a_i=a]}.
 \end{equation}
-Given reference group $r$, the disparate-impact ratio is
+Given reference group $r$, the sample outcome-rate ratio is
 \begin{equation}
-  \operatorname{DI}(a,r)=\frac{p_a}{p_r}.
+  \widehat R(a,r)=\frac{\widehat p_a}{\widehat p_r},
+  \qquad \widehat p_r>0.
 \end{equation}
 A deterministic threshold rule flags group $a$ when
-$\operatorname{DI}(a,r)<\theta$. Equality with the threshold does not trigger a
-flag.
+$\widehat R(a,r)<\theta$. Equality does not trigger a flag.
+If the reference rate is zero, the ratio is undefined rather than a pass.
+These quantities describe the recorded sample; they do not estimate a causal
+effect without additional assumptions. The implementation names this quantity
+\code{disparate\_impact}, but for the COMPAS non-recidivism example it is only
+an outcome-rate ratio, not an employment-selection disparate-impact finding.
 
-The configuration is
+An audit standard sufficient to interpret the ratio should be
 \begin{equation}
-  C=(G,r,\theta,P,E),
+  C^*=(S,G,r,O,\theta,P,E),
 \end{equation}
-where $G\subseteq A$ contains priority groups, $P$ contains process provenance,
+where $S$ defines domain, jurisdiction, dataset eligibility, and other scope
+constraints; $G\subseteq A$ contains priority groups; $O$ defines the outcome
+column, favorable value, and included records; $P$ contains process provenance;
 and $E$ contains evidence requirements such as minimum group size and acceptable
-attestation sources. Table~\ref{tab:config} summarizes the prototype schema.
+attestation sources. This is a design requirement, \emph{not} the current
+implementation. The prototype stores some elements of $S,G,r,\theta,P,E$, but
+does not bind $O$ to the finalized record, and it does not enforce all declared
+scope and evidence conditions. Table~\ref{tab:config} summarizes the prototype
+schema and its most important omission.
 
 \begin{table}[ht]
 \centering
@@ -206,115 +248,166 @@ Field & Purpose \\
 \code{fairness\_target} & Reference group used to compute outcome ratios. \\
 \code{fairness\_threshold} & Minimum accepted ratio under the configured rule. \\
 \code{domain}, \code{jurisdiction} & Scope boundaries for reuse. \\
+Outcome definition $O$ & Not bound by the finalized configuration; audit callers
+supply the outcome column and favorable value, and select the input records. \\
 \code{provenance} & Process identifier, date, protocol, participant count,
 facilitator, notes, and dissent or decision metadata where available. \\
-\code{evidence\_requirements} & Minimum sample and evidence conditions applied
-before substantive evaluation. \\
-\code{attestor\_policy} & Permitted evidence signers or verifier classes. \\
+\code{evidence\_requirements} & Declared minimum sample and evidence
+conditions; not all are enforced by the group-rate audit. \\
+\code{attestor\_policy} & Declared evidence signer or verifier classes; not
+independent proof of a person's authority. \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Authority classification and lifecycle}
 
-The prototype distinguishes a default-governed analysis from an analysis whose
-configuration has passed a documented finalization workflow. This distinction
-does not make a session representative merely because metadata fields are
-present. ``Community-valid'' is an asserted governance classification whose
-substantive validity depends on participant selection, informed consent,
-facilitator independence, compensation, decision rules, dissent preservation,
-scope, and authorization. Those conditions require field evidence and cannot
-be proven by schema validation alone.
+Three different claims must be separated: (i) a configuration has required
+metadata, (ii) some fields are bound to a signed receipt, and (iii) the people
+affected authorized a standard. The code's \code{community\_valid} label is
+primarily a metadata-validation result; it is \emph{not} evidence for (iii).
+For example, a demo configuration with zero recorded participants and otherwise
+populated fields returns \code{is\_community\_valid=True} in the current helper.
+This is a naming and governance-safety defect, not a community decision.
+Similarly, \code{active\_standard} means a record passed a software lifecycle,
+not that its participants were representative or authorized. An observer name
+and action are submitted under the same tenant API key, so the current API
+does not independently authenticate that observer.
 
-The API prototype supports draft session records, finalization, active-standard
-resolution, provenance receipts, and audit outputs that identify whether a
-default or finalized configuration was applied. The public registry is empty at
-the time of this Version 1 analysis; therefore, the evaluation below produces
-no community-valid audit.
+The API supports draft records, finalization, active-standard resolution, and
+receipts. In this revision, non-demo finalization rejects a request that
+differs from the approved draft, and the core racial-audit path rejects an
+attempt to override the finalized reference group. These are specific
+software invariants, not a complete governance guarantee. The public registry
+contains no verified community standard at the time of this analysis.
 
 \subsection{Implementation}
 
-The implementation consists of a reusable Python package, a FastAPI service,
-a React interface, a JSON-schema configuration format, and a controlled
-registry. The audit engine computes group outcome rates, reference-group ratios,
-threshold flags, and a max--min outcome-rate gap. The governance layer creates
-and validates configuration objects and tracks lifecycle state. A separate
-evidence path supports signed evidence and provenance receipts, but the present
-experiment evaluates only the group-rate audit and configuration mechanism.
+The implementation consists of a Python package, a FastAPI service, a React
+interface, a configuration format, and a registry. The group-rate engine
+computes rates, ratios, threshold flags, and a max--min rate gap. Its historical
+\code{community\_valid} output name should be read only as schema completeness.
+The current signed ledger hash covers the council label, participant count,
+demographic and consensus summaries, input protocol, threshold, priority
+groups, reference group, and previous hash. It does \emph{not} cover the entire
+configuration, including domain, jurisdiction, evidence requirements,
+attestor policy, or process-integrity metadata. The ordinary racial-audit
+response carries governance metadata but not an attached signed receipt.
+The outcome column and favorable value are supplied at audit time rather than
+bound by the finalized configuration. A caller can therefore change the
+estimand while using the same threshold and reference group.
+Consequently, this implementation does not yet prove end-to-end binding from
+an authorized process through a complete standard to an individual audit.
 
-At the analyzed repository revision, 172 API and core tests passed. JSON
-validation and both web builds also passed when run with the repository's Python
-environment. These checks establish software behavior on the tested cases, not
-social validity, legal compliance, production security, or deployment status.
+For a concrete \emph{researcher-defined} trace, let $G$ contain Black or
+African American HMDA records, $r$ be White, and $\theta=0.85$. With
+\code{action\_taken=1} defined as favorable among all retained action codes,
+the engine compares $0.8174$ with $0.85$ and flags the group. Changing only
+$\theta$ to $0.80$ removes the flag. Holding $\theta=0.80$ but restricting the
+outcome to originated versus denied records yields $0.7162$ and restores the
+flag. This trace contains no community decision and shows why a future standard
+must bind the outcome definition as well as its threshold.
 
 \section{Evaluation}
 
 \subsection{Research questions}
 
 \begin{description}[leftmargin=3.6em,style=nextline]
-  \item[RQ1] Does changing only the disparate-impact threshold alter which
-  sufficiently represented groups are flagged?
-  \item[RQ2] Can the reported result be regenerated from versioned code and
-  local data artifacts without using participant data?
+  \item[RQ1] Which parameter-binding invariants hold in the tested
+  implementation, and which provenance or authority claims remain unsupported?
+  \item[RQ2] How do threshold and outcome-definition choices change descriptive
+  group labels in the two extracts?
+  \item[RQ3] Which analyses can be regenerated from the disclosed code and
+  hashed local snapshots without participant data?
 \end{description}
 
 \subsection{Datasets}
 
 \paragraph{HMDA Michigan.}
-The source file contains 4,463 records from one 2024 Michigan lender filing.
+The local source file contains 4,463 records from one 2024 Michigan lender
+filing \cite{cfpbHMDA}, identified by LEI \code{B4TYDEB6GKMZO031MB27}.
 Records with unavailable, free-form, joint, multi-minority, or ``Other'' race
-labels were excluded. Four exact duplicate rows were removed, leaving 3,827
-records. The favorable outcome is \code{action\_taken=1} (loan originated); all
-other action codes are treated as non-origination. This is an observed
-origination analysis, not an approval model, statewide estimate, or causal test
-of discrimination. HMDA public data documentation is provided by the Consumer
-Financial Protection Bureau \cite{cfpbHMDA}.
+labels were excluded. The race filter leaves 3,831 records, including four rows
+identical across released fields. Because identical public-use rows are not
+proven duplicate real-world applications, the primary analysis retains them.
+Exact-row deduplication is reported only as a sensitivity check; it leaves
+3,827 records and changes the focal ratio from $0.8174$ to $0.8195$. The
+favorable outcome is \code{action\_taken=1} (loan originated); all
+other retained action codes are treated as non-origination in the original
+scenario. The official coding distinguishes approved-but-not-accepted (2),
+denied (3), withdrawn (4), and incomplete (5) from originated (1)
+\cite{cfpbHMDAguide}. Therefore, non-origination is not synonymous with denial.
+All 169 purchased-loan records (code 6) in the raw file have unavailable race
+and are excluded by the race filter.
+We also analyze (a) originated versus denied only, and (b) originated or
+approved-but-not-accepted versus denied. These are different estimands, not
+alternative estimates of the same one. The exact state/LEI/action query was
+reconstructed from the official CFPB API \cite{cfpbAPI}. On September 30, 2026,
+a fresh response had the same 4,463 parsed rows and 99 columns as the local
+snapshot, including row multiplicities; its byte hash differed because row
+order differed. The local byte hash and order-insensitive row-multiset digest
+are supplied with acquisition steps.
 
 \paragraph{COMPAS.}
 We use 7,214 records in ProPublica's Broward County COMPAS release
-\cite{angwin2016}. Excluding the ``Other'' label leaves 6,837 records. The
-favorable outcome is no recorded two-year recidivism. The dataset is a contested
-historical benchmark and is used here only to reproduce a threshold-sensitivity
-mechanism, not to endorse COMPAS or infer individual risk.
+\cite{angwin2016,propublicaData}. Excluding the ``Other'' label leaves 6,837 records. The
+favorable outcome is no recorded two-year recidivism. Although the source file
+contains COMPAS score fields, this analysis does not use them. Thus it does not
+measure score error, predictive fairness, or a system decision. The dataset is
+a contested historical benchmark used here only as a second descriptive
+threshold example.
 
 \subsection{Analysis}
 
-We calculate group rates and ratios relative to White applicants in HMDA and
-Caucasian defendants in COMPAS. We sweep
+We calculate group rates and ratios relative to White records in HMDA and
+Caucasian records in COMPAS. These reference groups are analyst-selected for
+the illustration, not community-authorized. We sweep
 $\theta\in\{0.70,0.75,0.80,0.85,0.90,0.95\}$. Aggregate counts exclude groups
-with fewer than 30 observations; excluded groups remain visible in the appendix.
+with fewer than 30 observations. The minimum is an analytic reporting rule,
+not a validated power calculation or a rule enforced by every API response.
+Small groups remain visible in the appendix without classification labels.
 
-To make sampling uncertainty explicit, we generate 10,000 stratified parametric
-bootstrap replicates with fixed seed 20,260,930. Within each group, favorable
-counts are sampled from a binomial distribution using that group's observed
-rate. We report percentile intervals for the two focus ratios. These intervals
-are descriptive and do not correct for dataset construction, measurement error,
-or repeated analytic choices.
+To show one component of uncertainty, the original analysis generates 10,000
+stratified parametric bootstrap replicates with fixed seed 20,260,930. Within
+each group, favorable counts are drawn from a binomial distribution using the
+observed rate. The resulting percentile intervals condition on group and
+outcome definitions and assume independent Bernoulli records. They do not
+capture lender selection, administrative coding, dependence, measurement error,
+or analytic-choice uncertainty. The outcome-definition analysis uses exact
+descriptive counts rather than a second inferential model.
+
+For RQ1, we inspected the non-demo draft/finalize and racial-audit reference
+paths and added regression tests that attempt to finalize altered parameters
+and override a finalized reference group. We also examined which fields are
+included in the receipt hash and how observer approval is authenticated. This
+is a focused implementation audit, not a formal security proof.
 
 \section{Results}
 
 \subsection{Threshold sensitivity}
 
-Table~\ref{tab:sweep} reports threshold flags among groups with $n\geq30$.
-Raising the scenario threshold from $0.80$ to $0.85$ adds the Black group in
-HMDA and the African-American group in COMPAS. The Asian HMDA group is already
-below $0.80$.
+Table~\ref{tab:sweep} reports threshold flags among groups with $n\geq30$
+under the original outcome definitions. Raising the scenario threshold from
+$0.80$ to $0.85$ adds the Black group in HMDA and the African-American group in
+COMPAS; the Asian HMDA group is already below $0.80$. This is an arithmetic
+consequence of comparing fixed ratios to two cutoffs, not evidence that one
+cutoff is better.
 
 \begin{table}[ht]
 \centering
 \caption{Groups flagged at each threshold; groups with $n<30$ excluded from
 counts.}
 \label{tab:sweep}
-\begin{tabular}{cccc}
+\begin{tabular}{ccc}
 \toprule
-$\theta$ & HMDA & COMPAS & Combined \\
+$\theta$ & HMDA & COMPAS \\
 \midrule
-0.70 & 0 & 0 & 0 \\
-0.75 & 0 & 0 & 0 \\
-0.80 & 1 & 0 & 1 \\
-0.85 & 2 & 1 & 3 \\
-0.90 & 2 & 1 & 3 \\
-0.95 & 2 & 1 & 3 \\
+0.70 & 0 & 0 \\
+0.75 & 0 & 0 \\
+0.80 & 1 & 0 \\
+0.85 & 2 & 1 \\
+0.90 & 2 & 1 \\
+0.95 & 2 & 1 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -331,58 +424,113 @@ intervals.}
 \label{tab:focus}
 \begin{tabular}{p{0.25\linewidth}rrrp{0.19\linewidth}}
 \toprule
-Dataset and group & $n_g$ & Rate & DI & 95\% interval \\
+Dataset and group & $n_g$ & Rate & Ratio & 95\% interval \\
 \midrule
-HMDA: Black or African American & 630 & 0.3444 & 0.8195 & [0.7260, 0.9175] \\
-COMPAS: African-American & 3,696 & 0.4857 & 0.8009 & [0.7652, 0.8391] \\
+HMDA: Black or African American & 632 & 0.3434 & 0.8174 & [0.7250, 0.9156] \\
+COMPAS: African-American & 3,696 & 0.4857 & 0.8009 & [0.7652, 0.8406] \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-These results answer RQ1 affirmatively as a deterministic property of the
-configured rule: for a fixed point estimate, the threshold changes the label.
-They do not show that $0.85$ is socially preferred, statistically optimal, or
-legally required.
+The bootstrap intervals cross at least one cutoff. A point-estimate flag is
+therefore not a confidence statement. More importantly, the HMDA result
+changes under a plausible outcome definition (Table~\ref{tab:outcomes}). The
+outcome definition is at least as consequential as the chosen threshold.
+
+\begin{table}[ht]
+\centering
+\caption{HMDA outcome-definition sensitivity after the same race filter,
+retaining identical released rows. Ratios compare Black or African American with White
+records. No scenario is an AI-model audit.}
+\label{tab:outcomes}
+\begin{tabular}{p{0.48\linewidth}rrr}
+\toprule
+Favorable outcome / included actions & $n$ & Black rate & Black/White ratio \\
+\midrule
+Originated / all retained actions & 3,831 & 0.3434 & 0.8174 \\
+Originated / originated or denied & 2,925 & 0.4004 & 0.7162 \\
+Originated or approved-not-accepted / those or denied & 2,998 & 0.4123 & 0.7230 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+As a separate exact-row-deduplication sensitivity, the corresponding sample
+sizes are 3,827, 2,923, and 2,996, and the ratios are $0.8195$, $0.7172$,
+and $0.7239$. The conclusion that outcome definition changes the original
+threshold story does not depend on this preprocessing choice.
+
+Under the two decision-restricted scenarios, the Black/White ratio is already
+below $0.80$; the original Black-group ``flip at $0.85$'' does not survive.
+These are not adjusted comparisons: applicant mix, product type, location,
+credit variables, and lender processes are uncontrolled.
+
+\subsection{Implementation invariants and remaining gaps}
+
+The new regression tests pass for two limited properties: an approved non-demo
+draft cannot be finalized with a changed threshold, and a finalized racial
+audit cannot silently switch its reference group through a caller override.
+The inspection also exposes non-covered receipt fields and self-declared
+observer approval, as described above. These prevent an end-to-end claim of
+authenticated community control. The current experiment does not test an
+actual process-to-audit trace with participant evidence.
 
 \subsection{Reproducibility}
 
-The analysis script records dataset hashes, preprocessing counts, the repository
-revision, all group rates, all threshold flags, the bootstrap seed, and the
-number of replicates in a machine-readable result file. It can be regenerated
-from the repository root with:
+The threshold-analysis script records dataset hashes, preprocessing counts,
+group rates, threshold flags, bootstrap seed, and replicate count. A second
+script records the HMDA action-code scenarios. With both raw local files
+present at the documented paths, run from the repository root:
 
 \begin{verbatim}
-python -m pip install -r requirements.txt
+python -m pip install -r docs/research/requirements-preprint.txt
 python scripts/generate_preprint_v1_results.py
+python scripts/preprint_hmda_outcome_sensitivity.py
 \end{verbatim}
 
-At generation, the input SHA-256 hashes were
-\code{17dad996...169d3029} for HMDA and
-\code{c451db85...91d0cc7d} for COMPAS. The versioned public artifact is
-available at the release URL reported in the Data and Code Availability section.
+The HMDA input SHA-256 is
+\code{17dad996ce10286d269e278cd6538067eab40cbf5616d26b6f2c6bcb169d3029};
+its parsed-row multiset digest is
+\code{b1c6b9619e2676fe8ce2901707cf17e99987bde668a678605d7f9702d1d9f4da}.
+The COMPAS local file was byte-for-byte identical to a fresh download from
+ProPublica's repository on September 30, 2026; its SHA-256 is
+\code{c451db85908b2f7fef1d83203bedf6b71ecda0d5af468d82ae62178f91d0cc7d}.
+Exact URLs, commands, and source-drift cautions are in the companion
+data-acquisition note. The associated v1.1.0 release includes this revision,
+both scripts and result files, acquisition notes, and direct dependency pins.
+Neither third-party raw file is included. The earlier v1.0.1 release contains a
+different manuscript and analysis and cannot regenerate these results.
+This narrow package reproduces the descriptive calculations for RQ2 and RQ3;
+it does not contain the API/core source and test fixtures inspected for RQ1,
+so those two reported implementation checks cannot be rerun from this package
+alone.
+Reacquisition does not establish that the datasets are fit for these research
+questions.
 
 \section{Discussion}
 
 \subsection{What the experiment establishes}
 
-The experiment establishes a narrow but consequential fact: an audit's
-threshold is not a passive display setting. Holding the dataset, metric, and
-reference group fixed, changing $\theta$ changes which groups receive a formal
-flag. A governance process that supplies $\theta$ therefore influences the
-audit's actionable output.
+With a fixed ratio, changing $\theta$ changes its flag when the ratio lies
+between two cutoffs. This is a software behavior check, not an empirical test
+of \libra's social value. The HMDA sensitivity adds a less trivial lesson:
+defining $Y$ is itself a substantive governance choice. A system that traces
+only $\theta$ and $r$ but not the outcome definition still leaves a major source
+of analytic discretion outside the claimed standard.
 
-The result supports making parameter source explicit. A report should indicate
-whether a threshold came from a regulation, an auditor default, a vendor, a
-research scenario, or a documented community process. The same number has a
-different authority claim under each source.
+Reports should identify whether a threshold, reference group, and outcome
+definition came from law, an auditor default, a vendor, a research scenario,
+or a documented process. These sources cannot be collapsed into a generic
+``community'' label. The actual audit record must also bind to the complete
+approved standard before an enforcement claim is justified.
 
 \subsection{What the experiment does not establish}
 
-It does not establish that a community prefers $0.85$ or $0.90$. It does not
-show that participants understand the consequences of the parameterization. It
-does not validate the proposed facilitation protocol, demonstrate institutional
-response, or show improved outcomes. It also does not turn a ratio threshold
-into a legal conclusion. Those claims require different evidence.
+It does not establish that a community prefers $0.85$ or $0.90$, that
+participants understand the parameterization, that the facilitation protocol
+works, or that an institution responds. Neither dataset result is a measured
+AI-system output disparity. The ratios are not legal conclusions. The two
+regression tests do not verify observer identity, complete receipt binding,
+consent, representativeness, or deployment security.
 
 \subsection{Design implications for prospective fieldwork}
 
@@ -405,18 +553,24 @@ washing with better metadata.
   \item \textbf{Descriptive, non-causal analysis.} Group outcome ratios do not
   identify why disparities occur and cannot establish unlawful discrimination,
   model bias, or institutional intent.
-  \item \textbf{Dataset scope.} The HMDA file covers one lender and treats every
-  non-origination action as unfavorable. COMPAS is geographically and
-  historically specific. Neither supports broad population generalization.
+  \item \textbf{Dataset scope and outcomes.} The HMDA file covers one lender;
+  its original binary outcome mixes denial with withdrawal, incompleteness,
+  and approved-but-not-accepted actions. The restricted outcomes substantially
+  change the focal ratio. COMPAS is geographically and historically specific;
+  this study does not use its model scores. Neither case supports an AI-model
+  or population-generalization claim.
   \item \textbf{Categorization.} Administrative race labels flatten identity
   and omit intersectional structure. Some groups remain too small for stable
   interpretation; a minimum-$n$ rule reduces but does not solve this problem.
   \item \textbf{Uncertainty.} The bootstrap intervals cross decision
-  thresholds. A mature implementation should incorporate interval-aware or
-  evidentiary review instead of relying only on point-estimate flags.
-  \item \textbf{Governance validity.} Provenance fields can document a process
-  but cannot guarantee representativeness, independence, consent, or influence.
-  Those properties require external review and institutional commitments.
+  thresholds and rely on a conditional Bernoulli model. A mature implementation
+  should support evidentiary review rather than relying on point-estimate flags.
+  \item \textbf{Governance validity and binding.} Provenance fields cannot
+  establish representativeness, independence, consent, or influence. The
+  observer endpoint does not independently authenticate a reviewer; the signed
+  receipt covers selected configuration fields and is not attached to the
+  ordinary racial-audit response. External review and further engineering are
+  needed before a strong governance claim.
   \item \textbf{Prototype maturity.} Passing tests does not establish
   production security or availability. The public deployment claim from an
   earlier draft was not verified for this paper and is intentionally omitted.
@@ -432,54 +586,58 @@ pilot in this paper.
 
 \section{Conclusion}
 
-\libra demonstrates a governance-to-audit mechanism in which the source and
-content of audit parameters remain visible in machine-readable outputs. Across
-two public benchmark datasets, moving a disparate-impact threshold from $0.80$
-to $0.85$ changes the status of substantively large groups. This shows why the
-choice and authority of an audit standard should be documented. Version 1 is a
-technical and methodological proof of mechanism. The next evidentiary step is a
-prospective, ethically reviewed co-design study that tests whether the protocol
-produces an authorized and useful standard and whether institutions act on it.
+\libra\ is a prototype for recording audit-parameter source and applying a
+configured threshold and reference group. The descriptive cases show both
+threshold and outcome-definition sensitivity; the latter reverses the original
+HMDA threshold story under reasonable restrictions. Focused tests establish
+two parameter-binding invariants, while receipt scope and authority remain
+incomplete. The project is therefore an inspectable prototype, not yet evidence
+that affected communities govern an AI audit. The larger claim needs a
+complete, verifiable process-to-audit trace and prospective, ethically reviewed
+fieldwork.
 
 \appendix
 \section{Group-Level Descriptive Results}
 
 \begin{longtable}{p{0.39\linewidth}rrrcl}
-\caption{All analyzed groups. A dagger marks groups excluded from aggregate
-flag counts because $n<30$.}\label{tab:allgroups}\\
+\caption{All groups under the original outcome definitions. A dagger marks
+groups below the $n=30$ reporting floor; their ratios are descriptive only and
+their threshold labels are suppressed.}\label{tab:allgroups}\\
 \toprule
-Dataset and group & $n$ & Rate & DI & $<0.80$ & $<0.85$ \\
+Dataset and group & $n$ & Rate & Ratio & $<0.80$ & $<0.85$ \\
 \midrule
 \endfirsthead
 \toprule
-Dataset and group & $n$ & Rate & DI & $<0.80$ & $<0.85$ \\
+Dataset and group & $n$ & Rate & Ratio & $<0.80$ & $<0.85$ \\
 \midrule
 \endhead
-HMDA: American Indian or Alaska Native$^{\dagger}$ & 29 & 0.1379 & 0.3281 & yes & yes \\
-HMDA: Asian & 232 & 0.3233 & 0.7691 & yes & yes \\
-HMDA: Black or African American & 630 & 0.3444 & 0.8195 & no & yes \\
-HMDA: Native Hawaiian or Other Pacific Islander$^{\dagger}$ & 5 & 0.2000 & 0.4758 & yes & yes \\
-HMDA: White (reference) & 2,931 & 0.4203 & 1.0000 & no & no \\
+HMDA: American Indian or Alaska Native$^{\dagger}$ & 29 & 0.1379 & 0.3284 & -- & -- \\
+HMDA: Asian & 232 & 0.3233 & 0.7696 & yes & yes \\
+HMDA: Black or African American & 632 & 0.3434 & 0.8174 & no & yes \\
+HMDA: Native Hawaiian or Other Pacific Islander$^{\dagger}$ & 5 & 0.2000 & 0.4761 & -- & -- \\
+HMDA: White (reference) & 2,933 & 0.4200 & 1.0000 & no & no \\
 \midrule
 COMPAS: African-American & 3,696 & 0.4857 & 0.8009 & no & yes \\
 COMPAS: Asian & 32 & 0.7188 & 1.1854 & no & no \\
 COMPAS: Caucasian (reference) & 2,454 & 0.6064 & 1.0000 & no & no \\
 COMPAS: Hispanic & 637 & 0.6358 & 1.0485 & no & no \\
-COMPAS: Native American$^{\dagger}$ & 18 & 0.4444 & 0.7330 & yes & yes \\
+COMPAS: Native American$^{\dagger}$ & 18 & 0.4444 & 0.7330 & -- & -- \\
 \bottomrule
 \end{longtable}
 
 \section*{Data and Code Availability}
 
-The Version 1 analysis code, machine-readable results, and manuscript source
-are available in the versioned public release at
-\url{https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.0.1}.
+The versioned companion package for this preprint is
+\url{https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.1.0}.
+It contains the manuscript source, both analysis scripts, their machine-readable
+results, dependency pins, and the third-party acquisition note.
 The manuscript is licensed under Creative Commons Attribution 4.0
 International (CC BY 4.0), and original analysis code is licensed under the
 Apache License 2.0. The raw HMDA and COMPAS files derive from third-party public
 sources, are not relicensed by this paper, and should be obtained and used in
-accordance with their source terms. The manuscript contains no confidential
-District 3 materials and no participant-level research data.
+accordance with their source terms. The manuscript
+contains no confidential District 3 materials or participant-level research
+data.
 
 \begin{thebibliography}{99}
 
@@ -489,11 +647,22 @@ Machine bias.
 \emph{ProPublica}, May 23, 2016.
 \url{https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing}
 
+\bibitem{propublicaData}
+ProPublica.
+\emph{COMPAS Analysis: Data and Code for Machine Bias}.
+\url{https://github.com/propublica/compas-analysis}
+
 \bibitem{bellamy2018}
 R. K. E. Bellamy et al.
 AI Fairness 360: An extensible toolkit for detecting, understanding, and
 mitigating unwanted algorithmic bias.
 \emph{arXiv:1810.01943}, 2018.
+
+\bibitem{bouchard2026}
+D. Bouchard.
+Bring Your Own Prompts: Use-Case-Specific Bias and Fairness Evaluation for LLMs.
+\emph{LT-EDI 2026}, pages 10--26, 2026.
+\url{https://arxiv.org/abs/2407.10853}
 
 \bibitem{birhane2022}
 A. Birhane, W. Isaac, V. Prabhakaran, M. D\'iaz, M. C. Elish, I. Gabriel,
@@ -512,6 +681,17 @@ learning.
 Consumer Financial Protection Bureau.
 Home Mortgage Disclosure Act data.
 \url{https://ffiec.cfpb.gov/data-publication/}
+
+\bibitem{cfpbHMDAguide}
+Consumer Financial Protection Bureau.
+\emph{Filing Instructions Guide for HMDA Data Collected in 2024},
+Section 3.4, Action Taken codes, 2023.
+\url{https://files.ffiec.cfpb.gov/documentation/2024-hmda-fig.pdf}
+
+\bibitem{cfpbAPI}
+Consumer Financial Protection Bureau.
+HMDA Data Browser API documentation.
+\url{https://ffiec.cfpb.gov/documentation/api/data-browser/}
 
 \bibitem{chouldechova2017}
 A. Chouldechova.
@@ -582,7 +762,7 @@ doi:10.1145/3359283.
 G. Li.
 Auditable accountability without an AI Act: Australia's public-sector AI
 assurance stack and the minimum reviewable trace.
-\emph{Law, Ethics \& Technology}, 3(3):1--13, 2026.
+\emph{Law, Ethics \& Technology}, 2026(3):0010, 2026.
 doi:10.55092/let20260010.
 
 \bibitem{mahajan2026}
@@ -590,6 +770,12 @@ S. Mahajan.
 Participatory provenance as representational auditing for AI-mediated public
 consultation.
 \emph{arXiv:2604.20711}, 2026.
+
+\bibitem{pang2025}
+B. Pang, T. Qiao, C. Walker, C. Cunningham, and Y. S. Koh.
+LIBRA: Measuring Bias of Large Language Model from a Local Context.
+\emph{arXiv:2502.01679}, 2025.
+\url{https://arxiv.org/abs/2502.01679}
 
 \bibitem{mushkani2026ledger}
 R. Mushkani.
@@ -626,6 +812,12 @@ In \emph{Proceedings of EAAMO}, 2022.
 H. Weerts, M. Dud\'ik, R. Edgar, A. Jalali, R. Lutz, and M. Madaio.
 Fairlearn: Assessing and improving fairness of AI systems.
 \emph{Journal of Machine Learning Research}, 24(257):1--8, 2023.
+
+\bibitem{xu2026}
+X. Xu, X. He, C. Zhi, R. Chen, J. McAuley, and Z. He.
+BiasFreeBench: a Benchmark for Mitigating Bias in Large Language Model Responses.
+\emph{ICLR 2026}, 2026.
+\url{https://proceedings.iclr.cc/paper_files/paper/2026/hash/71c3451f6cd6a4f82bb822db25cea4fd-Abstract-Conference.html}
 
 \bibitem{zhao2026}
 D. Zhao, H. Cha, M. J. Ryan, A. Wang, R. Baker-Ramos,
