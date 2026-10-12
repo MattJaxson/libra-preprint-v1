@@ -7,6 +7,10 @@ authors:
   - family-names: Jackson
     given-names: Matthew
 repository-code: "https://github.com/MattJaxson/libra-preprint-v1"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23312450
+    description: "Zenodo record for the v1.1.0 preprint PDF"
 url: "https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.1.0"
 abstract: >-
   Reproducibility package for an unreviewed technical preprint on partial
@@ -27,4 +31,8 @@ preferred-citation:
   authors:
     - family-names: Jackson
       given-names: Matthew
-  url: "https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.1.0"
+      affiliation: "Independent Researcher"
+  doi: 10.5281/zenodo.23312450
+  publisher:
+    name: Zenodo
+  url: "https://doi.org/10.5281/zenodo.23312450"

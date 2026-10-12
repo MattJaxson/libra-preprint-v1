@@ -5,6 +5,9 @@ This repository is the public reproducibility package for:
 > Matthew Jackson. *Libra: A Prototype for Provenance-Aware Fairness Audit
 > Parameters — Implementation Review and Descriptive Sensitivity Analysis.*
 > Technical preprint v1.1.0, 2026. Not peer reviewed.
+> Zenodo. https://doi.org/10.5281/zenodo.23312450
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23312450.svg)](https://doi.org/10.5281/zenodo.23312450)
 
 ## Contents
 
@@ -64,6 +67,9 @@ drift, so reproduce against the documented snapshots before comparing outputs.
 
 ## Citation
 
-Use the metadata in `CITATION.cff`. The versioned companion release is:
+Use the metadata in `CITATION.cff`. The preprint PDF is archived on Zenodo:
+<https://doi.org/10.5281/zenodo.23312450>
+
+The versioned companion release is:
 
 <https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.1.0>
