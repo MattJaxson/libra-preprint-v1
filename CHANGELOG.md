@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.1.0 — pending author approval and publication
+## v1.1.0 — 2026-10-12
 
 - Reframed the manuscript as an unreviewed technical preprint and narrowed the
   claim to partial parameter binding and descriptive sensitivity.
@@ -9,6 +9,7 @@
 - Added outcome-definition scenarios, acquisition instructions, direct
   dependency pins, a related-work comparison, and implementation limits.
 - No raw third-party data or participant data are included.
+- Layout: one-line title, compact header, SHA-256 digests listed so they fit the margins.
 
 ## v1.0.1 — 2026-09-30
 
