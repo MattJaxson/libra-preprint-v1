@@ -9,7 +9,7 @@ authors:
 repository-code: "https://github.com/MattJaxson/libra-preprint-v1"
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.23312450
+    value: 10.5281/zenodo.23328063
     description: "Zenodo record for the v1.1.0 preprint PDF"
 url: "https://github.com/MattJaxson/libra-preprint-v1/releases/tag/v1.1.0"
 abstract: >-
@@ -32,7 +32,7 @@ preferred-citation:
     - family-names: Jackson
       given-names: Matthew
       affiliation: "Independent Researcher"
-  doi: 10.5281/zenodo.23312450
+  doi: 10.5281/zenodo.23328063
   publisher:
     name: Zenodo
-  url: "https://doi.org/10.5281/zenodo.23312450"
+  url: "https://doi.org/10.5281/zenodo.23328063"
